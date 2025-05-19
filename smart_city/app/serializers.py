@@ -44,7 +44,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        data['usuario'] = {
+        data['Usuario'] = {
             'id': self.user.id, 
             'username': self.user.username,
             'email': self.user.email

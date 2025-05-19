@@ -10,7 +10,7 @@ class Usuario(AbstractUser):
     telefone = models.CharField(max_length=100, null=True, blank=True)
     genero = models.CharField(max_length=100, choices=(('M', 'Masculino'), ('F', 'Feminio'), ('N', 'Neutro')), null=True, blank=True)
     cargo = models.CharField(choices=funcao, max_length=100)
-    REQUIRED_FIELDS = ['cargo', 'genero']
+    REQUIRED_FIELDS = ['cargo']
 
     def __str__(self):
         return self.username
@@ -46,5 +46,5 @@ class Historico(models.Model):
     observacoes = models.TextField()
 
     def __str__(self):
-        return self.sensor
+        return str(self.sensor)
 # Create your models here.

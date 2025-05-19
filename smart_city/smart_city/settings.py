@@ -79,8 +79,12 @@ WSGI_APPLICATION = 'smart_city.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'integrador_senai',
+        'USER': 'root',
+        'PASSWORD': 'senai',
+        'HOST': 'localhost',  # --->Mysql Ip---<
+        'PORT': '3306',       # porta padrão
     }
 }
 
@@ -126,8 +130,17 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
 SIMPLE_JWT = {
-    'ACESS_TOKEN_LIFETIME': timedelta(hours=4), # Adicione validade para o Token
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=4), # Adicione validade para o Token
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1), # Define o prazo do Refresh Token
     'ROTATE_REFRESH_TOKENS': False, 
     'BLACKLIST_AFTER_ROTATION': True, 
