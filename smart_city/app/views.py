@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from .permissions import * 
 from rest_framework.views import APIView
 from rest_framework.generics import *
 from rest_framework.response import Response
@@ -8,6 +9,8 @@ from .models import *
 from openpyxl import load_workbook
 from django.conf import settings
 import os
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import IsAuthenticated
 
 def parse_float(val):
     if isinstance(val, str):
@@ -18,6 +21,7 @@ def parse_float(val):
         return None
 
 class TesteExcel(APIView):
+    permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'luminosidade.xlsx')
 
@@ -51,6 +55,7 @@ class TesteExcel(APIView):
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 # umidade.xlsx
 class TesteExcel2(APIView):
+    permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'temperatura.xlsx')
 
@@ -84,6 +89,7 @@ class TesteExcel2(APIView):
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class TesteExcel3(APIView):
+    permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'umidade.xlsx')
 
@@ -118,6 +124,7 @@ class TesteExcel3(APIView):
 
 
 class TesteExcel4(APIView):
+    permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'contador.xlsx')
 
@@ -151,6 +158,7 @@ class TesteExcel4(APIView):
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
 class TesteExcel5(APIView):
+    permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'ambientes.xlsx')
 
@@ -183,9 +191,13 @@ class TesteExcel5(APIView):
 class ViewList(ListAPIView):
     queryset = Sensores.objects.all()
     serializer_class = SensoresSerializer
+    permission_classes =[IsDirectorOrProfessor]
 
 class ViewsAmbiente(ListAPIView):
     queryset = Ambientes.objects.all()
     serializer_class = AmbienteSerializer
+    permission_classes =[IsDirectorOrProfessor]
 
+class LoginView(TokenObtainPairView):
+    serializer_class = LoginSerializer
 # Create your views here.

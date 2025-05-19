@@ -1,6 +1,20 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
+funcao = (
+    ('D', 'Diretor'),
+    ('P', 'Professor')
+)
 
+class Usuario(AbstractUser):
+    telefone = models.CharField(max_length=100, null=True, blank=True)
+    genero = models.CharField(max_length=100, choices=(('M', 'Masculino'), ('F', 'Feminio'), ('N', 'Neutro')), null=True, blank=True)
+    cargo = models.CharField(choices=funcao, max_length=100)
+    REQUIRED_FIELDS = ['cargo', 'genero']
+
+    def __str__(self):
+        return self.username
+    
 status_sensor = [
     ('ativo','ativo'),
     ('inativo', 'inativo')
