@@ -200,4 +200,20 @@ class ViewsAmbiente(ListAPIView):
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
+
+
+class CreateUserView(APIView):
+    permission_classes = [IsDirector]
+    def post(self, request):
+        if not request.user.has_perm('app.add_usuario'):  
+            return Response({"detail": "Você não tem permissão para criar usuários."}, status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = UsuarioSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()  
+            return Response({
+                'message':"usuario criado"
+            }, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # Create your views here.
