@@ -24,11 +24,9 @@ class Sensores(models.Model):
     sensor = models.CharField(max_length=255)
     mac_address = models.CharField(max_length=255)
     unidade_medida = models.CharField(max_length=255)
-    valor = models.FloatField()
     latitude = models.FloatField()
     longitude = models.FloatField()
     status = models.CharField(choices=status_sensor, max_length=55)
-    timestamp = models.DateTimeField() 
     def __str__(self):
         return self.sensor
 
@@ -43,8 +41,9 @@ class Ambientes(models.Model):
 class Historico(models.Model):
     sensor = models.ForeignKey(Sensores, on_delete=models.CASCADE)
     ambiente = models.ForeignKey(Ambientes, on_delete=models.CASCADE)
-    observacoes = models.TextField()
-
+    valor = models.FloatField()
+    timestamp = models.DateTimeField() 
+    
     def __str__(self):
         return str(self.sensor)
 # Create your models here.

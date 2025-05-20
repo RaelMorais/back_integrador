@@ -20,7 +20,7 @@ def parse_float(val):
     except:
         return None
 
-class TesteExcel(APIView):
+class SaveLuminosidade(APIView):
     permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'luminosidade.xlsx')
@@ -34,17 +34,15 @@ class TesteExcel(APIView):
                 if not any(row):
                     continue
 
-                sensor, mac, unidade, valor, lat, lon, status_valor, timestamp = row
+                sensor, mac, unidade, _, lat, lon, status_valor, _,  = row
 
                 sensor_data = {
                         'sensor': sensor,
                         'mac_address': mac,
                         'unidade_medida': unidade,
-                        'valor': parse_float(valor),
                         'latitude': parse_float(lat),
                         'longitude': parse_float(lon),
                         'status': status_valor,
-                        'timestamp': timestamp
                     }
 
                 serializer = SensoresSerializer(data=sensor_data)
@@ -53,8 +51,42 @@ class TesteExcel(APIView):
             return Response({'mensagem': 'Importação concluída'}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+# save em historico
+class SaveHistoricoUmidade(APIView):
+    permission_classes = [IsDirector]
+    def post(self, request):
+        caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'temperatura.xlsx')
+        try:
+            wb = load_workbook(caminho_arquivo, data_only=True)
+            sheet = wb.active
+
+            for odio, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+                    if not any(row):
+                        continue
+                    
+                    try:
+                        mac_address, sig, _, valor, _, _, _, timestamp = row
+                        sensor = Sensores.objects.get(mac_address=mac_address)
+                        ambiente = Ambientes.objects.get(sig=sig)
+                    except Exception as e:
+                        continue  
+    
+                    sensor_data = {
+                            'sensor': sensor.id,
+                            'ambiente': ambiente.id,
+                            'valor': parse_float(valor),
+                            'timestamp': timestamp,
+                        }
+                    serializer = HistoricoSerializer(data=sensor_data)
+                    if serializer.is_valid():
+                        serializer.save()
+            return Response({'mensagem': 'Importação concluída'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+                return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 # umidade.xlsx
-class TesteExcel2(APIView):
+class SaveTemperatura(APIView):
     permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'temperatura.xlsx')
@@ -68,17 +100,15 @@ class TesteExcel2(APIView):
                 if not any(row):
                     continue
 
-                sensor, mac, unidade, valor, lat, lon, status_valor, timestamp = row
+                sensor, mac, unidade, _, lat, lon, status_valor, _,  = row
 
                 sensor_data = {
                         'sensor': sensor,
                         'mac_address': mac,
                         'unidade_medida': unidade,
-                        'valor': parse_float(valor),
                         'latitude': parse_float(lat),
                         'longitude': parse_float(lon),
                         'status': status_valor,
-                        'timestamp': timestamp
                     }
 
                 serializer = SensoresSerializer(data=sensor_data)
@@ -88,7 +118,7 @@ class TesteExcel2(APIView):
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-class TesteExcel3(APIView):
+class SaveUmidade(APIView):
     permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'umidade.xlsx')
@@ -102,17 +132,15 @@ class TesteExcel3(APIView):
                 if not any(row):
                     continue
 
-                sensor, mac, unidade, valor, lat, lon, status_valor, timestamp = row
+                sensor, mac, unidade, _, lat, lon, status_valor, _,  = row
 
                 sensor_data = {
                         'sensor': sensor,
                         'mac_address': mac,
                         'unidade_medida': unidade,
-                        'valor': parse_float(valor),
                         'latitude': parse_float(lat),
                         'longitude': parse_float(lon),
                         'status': status_valor,
-                        'timestamp': timestamp
                     }
 
                 serializer = SensoresSerializer(data=sensor_data)
@@ -121,9 +149,9 @@ class TesteExcel3(APIView):
             return Response({'mensagem': 'Importação concluída'}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)   
+        
 
-
-class TesteExcel4(APIView):
+class SaveContador(APIView):
     permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'contador.xlsx')
@@ -137,17 +165,15 @@ class TesteExcel4(APIView):
                 if not any(row):
                     continue
 
-                sensor, mac, unidade, valor, lat, lon, status_valor, timestamp = row
+                sensor, mac, unidade, _, lat, lon, status_valor, _,  = row
 
                 sensor_data = {
                         'sensor': sensor,
                         'mac_address': mac,
                         'unidade_medida': unidade,
-                        'valor': parse_float(valor),
                         'latitude': parse_float(lat),
                         'longitude': parse_float(lon),
                         'status': status_valor,
-                        'timestamp': timestamp
                     }
 
                 serializer = SensoresSerializer(data=sensor_data)
@@ -157,7 +183,7 @@ class TesteExcel4(APIView):
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
 
-class TesteExcel5(APIView):
+class SaveAmbiente(APIView):
     permission_classes =[IsDirector]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'ambientes.xlsx')
