@@ -31,7 +31,9 @@ urlpatterns = [
     path('saveU/', SaveUmidade.as_view()),
     path('saveT/', SaveTemperatura.as_view()),
     path('saveH/', SaveHistorico.as_view()),
-    path("listSS/", CreateListAmbiente.as_view(), ),
+
+    path("ambiente/", CreateListAmbiente.as_view(),), 
+    path("ambiente/<int:pk>", CreateListAmbiente.as_view(), ),
     # path('importar/', ImportExcelData.as_view(), name='importar-dados'),
     path('exportH/', ExportHistorico.as_view()),
     path('exportS/', ExportSensores.as_view()),

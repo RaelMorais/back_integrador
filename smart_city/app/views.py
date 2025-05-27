@@ -19,10 +19,13 @@ from drf_yasg import openapi
 
 # View to http method GET and POST to Model -> Ambiente with only Director Permission 
 class CreateListAmbiente(ListCreateAPIView):
+    '''
+    View to List and Create a new Ambiente 
+    '''
     queryset = Ambientes.objects.all()
     serializer_class = AmbienteSerializer
     http_method_names = ['get', 'post']
-    # permission_classes = [IsDirector]
+    permission_classes = [IsDirector]
     
     swagger_auto_schema(
         operation_description='Create a ambiente', 
