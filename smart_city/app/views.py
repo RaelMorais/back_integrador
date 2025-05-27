@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from .permissions import * 
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
 from rest_framework.generics import *
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,6 +13,143 @@ import os
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+
+# View to http method GET and POST to Model -> Ambiente with only Director Permission 
+class CreateListAmbiente(ListCreateAPIView):
+    queryset = Ambientes.objects.all()
+    serializer_class = AmbienteSerializer
+    http_method_names = ['get', 'post']
+    # permission_classes = [IsDirector]
+    
+    swagger_auto_schema(
+        operation_description='Create a ambiente', 
+        request_body=AmbienteSerializer,
+        responses={
+            201: openapi.Response("Successfully created Ambiente ✅", AmbienteSerializer),
+            400: "Bad Request"
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message':'Successfully created Ambiente ✅'}, status=status.HTTP_201_CREATED)
+        return Response({'message':'Error to create Ambiente 😥'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    @swagger_auto_schema(
+        operation_description='Show all ambientes',
+        responses={
+            200: AmbienteSerializer,
+            404: 'Not Found',
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        ambientes = self.get_queryset()
+        serializer = self.get_serializer(ambientes, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class DetailUpdateDeleteAmbiente(RetrieveUpdateDestroyAPIView):
+    '''
+    View to retrieve, update, and delete Ambiente by ID.
+    '''
+    queryset = Ambientes.objects.all()
+    serializer_class = AmbienteSerializer
+    http_method_names = ['get', 'put', 'delete']
+    
+    # permission_classes = [IsDirector]
+    @swagger_auto_schema(
+        operation_description='Show specific ambiente using ID',
+        responses={
+            200: AmbienteSerializer,
+            400: 'Bad Request',
+            404: 'Not Found',
+            500: 'Internal Server Error'
+        }
+    )
+    
+    def get(self, request, *args, **kwargs):
+        try:
+            ambientes = self.get_object()
+            serializer = self.get_serializer(ambientes)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Http404:
+            raise Http404('Not Found')
+        
+    @swagger_auto_schema(
+        operation_description='Update ambiente by ID',
+        request_body=AmbienteSerializer,
+        responses={
+            200: AmbienteSerializer,
+            400: 'Bad Request',
+            404: 'Not Found',
+            500: 'Internal Server Error'
+        }
+    )
+
+    def put(self, request, *args, **kwargs): # <-- For the update 
+        try: 
+            ambientes = self.get_object()
+            serializer = self.get_serializer(ambientes, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'Successfully ✅✨', 'data':serializer.data}, status=status.HTTP_200_OK)
+            return Response({'message':'Error processing request', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        except Http404:
+            raise Http404('Not Found')
+        
+    @swagger_auto_schema(
+        operation_description='Delete ambiente by ID',
+        responses={
+            204: 'Successfully deleted',
+            404: 'Not Found',
+            500: 'Internal Server Error'
+        }
+    )
+    def delete(self, request, *args, **kwargs):
+        try:
+            ambientes = self.get_object()
+            ambientes.delete()
+            return Response({'message':'Successfully ✅'}, status=status.HTTP_204_NO_CONTENT)
+        except Http404:
+            raise Http404('Not Found')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Create your views here.
 def parse_float(val):
     if isinstance(val, str):
         val = val.replace(',', '.')
@@ -20,24 +158,8 @@ def parse_float(val):
     except:
         return None
 
-class ViewList(ListAPIView):
-    queryset = Sensores.objects.all()
-    serializer_class = SensoresSerializer
-    # permission_classes =[IsDirectorOrProfessor]
-
-class ViewsAmbiente(ListAPIView):
-    queryset = Ambientes.objects.all()
-    serializer_class = AmbienteSerializer
-    permission_classes =[IsDirectorOrProfessor]
-
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
-
-
-
-class viewHistorico(ListAPIView):
-    queryset = Historico.objects.all()
-    serializer_class = HistoricoSerializer
 
 
 class CreateUserView(APIView):
@@ -54,8 +176,6 @@ class CreateUserView(APIView):
             }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-# Create your views here.
-
 
 ######################################################################################################################################IMPORT 
 # Views for import data from Excel in to Database
@@ -166,7 +286,7 @@ class SaveLuminosidade(APIView):
             sheet = wb.active
 
            
-            for linha_planilha, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):
+            for row in sheet.iter_rows(min_row=2, values_only=True):
                 if not any(row):
                     continue
 
@@ -331,3 +451,4 @@ class ExportHistorico(APIView):
         wb.save(response)
 
         return response
+    
