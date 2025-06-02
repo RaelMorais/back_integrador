@@ -13,6 +13,8 @@ from django.http import HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .filters import * 
+from django_filters.rest_framework import DjangoFilterBackend
+from django_filters import rest_framework as filters
 
 class AmbienteView(APIView):
     http_method_names = ['get', 'post', 'put', 'delete']
@@ -37,8 +39,13 @@ class AmbienteView(APIView):
             except Http404:
                 raise Http404('Not Found')
         else: 
-            ambientes = Ambientes.objects.all()
-            serializer = AmbienteSerializer(ambientes, many=True)
+            sig = request.GET.get('sig', None)
+            
+            queryset = Ambientes.objects.all()
+            if sig is not None:
+                queryset = queryset.filter(sig=sig)
+                
+            serializer = AmbienteSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         
     swagger_auto_schema(
