@@ -16,7 +16,6 @@ class SensoresSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sensores
         fields ='__all__'
-
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
@@ -40,11 +39,12 @@ class UsuarioSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
     
 class LoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
-        data['Usuario'] = {
+        data['user'] = {
             'id': self.user.id, 
             'username': self.user.username,
             'email': self.user.email

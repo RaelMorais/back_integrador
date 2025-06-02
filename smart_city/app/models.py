@@ -7,8 +7,11 @@ funcao = (
 )
 
 class Usuario(AbstractUser):
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[],)
     telefone = models.CharField(max_length=100, null=True, blank=True)
-    genero = models.CharField(max_length=100, choices=(('M', 'Masculino'), ('F', 'Feminio'), ('N', 'Neutro')), null=True, blank=True)
     cargo = models.CharField(choices=funcao, max_length=100)
     REQUIRED_FIELDS = ['cargo']
 
@@ -34,7 +37,7 @@ class Ambientes(models.Model):
     sig = models.PositiveIntegerField(unique=True)
     descricao = models.CharField(max_length=255)
     ni = models.CharField(max_length=255)
-    responsavel = models.CharField(max_length=255)
+    responsavel = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     def __str__(self):
         return self.descricao
 

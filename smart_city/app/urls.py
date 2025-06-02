@@ -22,28 +22,37 @@ schema_view = get_schema_view(
     
 
 urlpatterns = [
-    path("teste/", DetailUpdateDeleteAmbiente.as_view()),
+    #Ambientes Paths
+    path("ambiente/", AmbienteView.as_view()),
+    path("ambiente/<int:pk>", AmbienteView.as_view()),
+    path("import/ambiente/", ImportAmbienteData.as_view()),
+    path("export/ambiente/", ExportAmbientes.as_view()), 
 
+    #Sensores Paths 
+    path("sensores/", SensoresView.as_view()), 
+    path("sensores/<int:pk>", SensoresView.as_view()), 
+    path("import/sensores/contador/", ImportContador.as_view()), 
+    path("import/sensores/luminosidade/", ImportLuminosidade.as_view()),
+    path("import/sensores/umidade/", ImportUmidade.as_view()),
+    path("import/sensores/temperatura/", ImportTemperatura.as_view()),  
+    path("export/sensores/", ExportSensores.as_view()), 
 
-    path('saveA/', SaveAmbiente.as_view()),
-    path('saveL/', SaveLuminosidade.as_view()),
-    path('saveC/', SaveContador.as_view()),
-    path('saveU/', SaveUmidade.as_view()),
-    path('saveT/', SaveTemperatura.as_view()),
-    path('saveH/', SaveHistorico.as_view()),
+    #Historico Paths 
+    path("historico/", HistoricoView.as_view()),
+    path("historico/<int:pk>", HistoricoView.as_view()),
+    path("import/historico/", ImportHistorico.as_view()),
+    path("export/historico/", ExportHistorico.as_view(), name=""), 
 
-    path("ambiente/", CreateListAmbiente.as_view(),), 
-    path("ambiente/<int:pk>", CreateListAmbiente.as_view(), ),
-    # path('importar/', ImportExcelData.as_view(), name='importar-dados'),
-    path('exportH/', ExportHistorico.as_view()),
-    path('exportS/', ExportSensores.as_view()),
-    path('exportA/', ExportAmbientes.as_view()),
-
+    #Obtain Token 
     path('token/', LoginView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
-    path('criar/', CreateUserView.as_view()),
 
+    path("user/", SaveUser.as_view()),
+    #Create User 
+    path('create/', CreateUserView.as_view()),
+
+    #Swagger & Redoc
     path('redoc/', view=schema_view.with_ui('redoc', cache_timeout=0)), # --> Com redoc 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'), # --> Com Swaager
 ]
