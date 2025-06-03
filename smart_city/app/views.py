@@ -12,10 +12,17 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.http import HttpResponse
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .filters import * 
-from django_filters.rest_framework import DjangoFilterBackend
-from django_filters import rest_framework as filters
+from .filters import SensorFIlter, HistoricoFilter, AmbienteFilter
+from rest_framework.permissions import IsAuthenticated
 
+def parse_float(val):
+    if isinstance(val, str):
+        val = val.replace(',', '.')
+    try:
+        return float(val)
+    except:
+        return None
+    
 class AmbienteView(APIView):
     http_method_names = ['get', 'post', 'put', 'delete']
     permission_classes = [IsDirectorOrOnlyRead]
@@ -38,15 +45,18 @@ class AmbienteView(APIView):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Http404:
                 raise Http404('Not Found')
-        else: 
-            sig = request.GET.get('sig', None)
             
-            queryset = Ambientes.objects.all()
-            if sig is not None:
-                queryset = queryset.filter(sig=sig)
-                
-            serializer = AmbienteSerializer(queryset, many=True)
+        else:
+            # Aplica o filtro
+            filterset = AmbienteFilter(request.GET, queryset=Ambientes.objects.all())
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Obtém a queryset filtrada
+            ambientes = filterset.qs
+            serializer = AmbienteSerializer(ambientes, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
+       
         
     swagger_auto_schema(
         operation_description='Create a ambiente', 
@@ -106,9 +116,9 @@ class ImportAmbienteData(APIView):
     permission_classes = [IsDirectorOrOnlyRead]
     @swagger_auto_schema(auto_schema=None)
     def post(self, request):
-        file_path = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'ambientesComId.xlsx')
+        caminho_Arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'ambientesComId.xlsx')
         try:
-            wb = load_workbook(file_path, data_only=True)
+            wb = load_workbook(caminho_Arquivo, data_only=True)
             sheet = wb.active
 
             for row in sheet.iter_rows(min_row=2, values_only=True):
@@ -152,9 +162,15 @@ class SensoresView(APIView):
             except Http404:
                 raise Http404('Not Found')
         else:
-                sensores = Sensores.objects.all()
-                serializer = SensoresSerializer(sensores, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            # Aplica o filtro
+            filterset = SensorFIlter(request.GET, queryset=Sensores.objects.all())
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Obtém a queryset filtrada
+            sensores = filterset.qs
+            serializer = SensoresSerializer(sensores, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
     @swagger_auto_schema(
         operation_description='Create a Sensor', 
         request_body=SensoresSerializer,
@@ -209,14 +225,14 @@ class SensoresView(APIView):
 class ImportContador(APIView):
     # permission_classes =[IsDirector]
     def post(self, request):
-        file_path = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'contador.xlsx')
+        caminho_Arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'contador.xlsx')
 
         try:
-            wb = load_workbook(file_path, data_only=True)
+            wb = load_workbook(caminho_Arquivo, data_only=True)
             sheet = wb.active
 
            
-            for row in sheet.iter_rows(min_row=2, values_only=True):
+            for linha_planilha, row in enumerate(sheet.iter_rows(min_row=2, values_only=True), start=2):               
                 if not any(row):
                     continue
 
@@ -234,6 +250,12 @@ class ImportContador(APIView):
                 serializer = SensoresSerializer(data=sensor_data)
                 if serializer.is_valid():
                     serializer.save()
+                else:
+                    return Response({
+                    'mensagem': f'Erro na linha {linha_planilha}',
+                    'erros': serializer.errors
+                }, status=status.HTTP_400_BAD_REQUEST)
+
             return Response({'mensagem': 'Importação concluída'}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)  
@@ -359,9 +381,15 @@ class HistoricoView(APIView):
             except Http404:
                 raise Http404('Not Found')
         else:
-                historico = Historico.objects.all()
-                serializer = HistoricoSerializer(historico, many=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+            # Aplica o filtro
+            filterset = HistoricoFilter(request.GET, queryset=Historico.objects.all())
+            if not filterset.is_valid():
+                return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Obtém a queryset filtrada
+            historico = filterset.qs
+            serializer = HistoricoSerializer(historico, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
     @swagger_auto_schema(
         operation_description='Create a Historico', 
         request_body=HistoricoSerializer,
@@ -415,10 +443,10 @@ class ImportHistorico(APIView):
     permission_classes = [IsDirectorOrOnlyRead]
     @swagger_auto_schema(auto_schema=None)
     def post(self, request):
-        file_Path = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'historico.xlsx')
+        caminho_Arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'historico.xlsx')
   
         try:
-            wb = load_workbook(file_Path, data_only=True)
+            wb = load_workbook(caminho_Arquivo, data_only=True)
             sheet = wb.active
 
             for row in sheet.iter_rows(min_row=2, values_only=True):
@@ -445,14 +473,6 @@ class ImportHistorico(APIView):
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-def parse_float(val):
-    if isinstance(val, str):
-        val = val.replace(',', '.')
-    try:
-        return float(val)
-    except:
-        return None
-    
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
@@ -501,9 +521,9 @@ class UpdateDeleteDetailUsuario(RetrieveUpdateDestroyAPIView):
     @swagger_auto_schema(
         operation_description='Retorna todos os usuarios',
         responses={
-            200: UsuarioSerializer,  # Retorna os dados do piloto
-            404: 'Não encontrado',  # Caso o piloto não seja encontrado
-            400: 'Erro na requisição',  # Erro genérico
+            200: UsuarioSerializer, 
+            404: 'Não encontrado',  
+            400: 'Erro na requisição', 
         }
     )
     def get(self, request, *args, **kwargs):
@@ -589,6 +609,8 @@ class SaveUser(APIView):
  
 ######################################################################################################################################EXPORT 
 class ExportSensores(APIView):
+    permission_classes = [IsAuthenticated, IsDirectorOrOnlyRead]
+
     def get(self, request):
         sensores = Sensores.objects.all()
 
@@ -616,6 +638,8 @@ class ExportSensores(APIView):
         return response
 
 class ExportAmbientes(APIView):
+        permission_classes = [IsDirectorOrOnlyRead]
+
         def get(self, request):
             ambientes = Ambientes.objects.all()
 
@@ -640,7 +664,7 @@ class ExportAmbientes(APIView):
 
             return response
 class ExportHistorico(APIView):
-
+    permission_classes = [IsDirectorOrOnlyRead]
     def get(self, request):
         historicos = Historico.objects.all()
 
