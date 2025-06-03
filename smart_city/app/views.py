@@ -43,7 +43,7 @@ class AmbienteView(APIView):
                 ambientes = Ambientes.objects.get(pk=pk)
                 serializer = AmbienteSerializer(ambientes)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            except Http404:
+            except:
                 raise Http404('Not Found')
             
         else:
@@ -156,8 +156,8 @@ class SensoresView(APIView):
 
         if pk:
             try: 
-                sensores = Sensores.objects.all()
-                serializer = SensoresSerializer(sensores, many=True)
+                sensores = get_object_or_404(Sensores, pk=pk)                
+                serializer = SensoresSerializer(sensores)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             except Http404:
                 raise Http404('Not Found')
@@ -200,6 +200,7 @@ class SensoresView(APIView):
             sensores = Sensores.objects.get(pk=pk)
             serializer = SensoresSerializer(sensores, data=request.data, partial=True)
             if serializer.is_valid():
+                serializer.save()
                 return Response({'message':'Successfully updated ✅', 'data': serializer.data}, status=status.HTTP_201_CREATED)
             return Response({'message':'Error in Request ❌', 'Error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Http404:
@@ -262,7 +263,8 @@ class ImportContador(APIView):
 
 # Save 'Luminosidade' data 
 class ImportLuminosidade(APIView):
-    # permission_classes =[IsDirector]
+    permission_classes =[IsDirectorOrOnlyRead]
+
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'luminosidade.xlsx')
 

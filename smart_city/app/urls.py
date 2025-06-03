@@ -30,7 +30,7 @@ urlpatterns = [
 
     #Sensores Paths 
     path("sensores/", SensoresView.as_view()), 
-    path("sensores/<int:pk>", SensoresView.as_view()), 
+    path("sensores/<int:pk>/", SensoresView.as_view()), 
     path("import/sensores/contador/", ImportContador.as_view()), 
     path("import/sensores/luminosidade/", ImportLuminosidade.as_view()),
     path("import/sensores/umidade/", ImportUmidade.as_view()),
