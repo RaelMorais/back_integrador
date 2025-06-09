@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import * 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+# Serializers para transformar os dados em json
 class HistoricoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Historico

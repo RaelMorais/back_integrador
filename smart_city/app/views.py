@@ -15,6 +15,8 @@ from drf_yasg import openapi
 from .filters import SensorFIlter, HistoricoFilter, AmbienteFilter
 from rest_framework.permissions import IsAuthenticated
 
+
+# Função para converter uma string em um float, caso as informações do excel não esteja formatada como float 
 def parse_float(val):
     if isinstance(val, str):
         val = val.replace(',', '.')
@@ -22,7 +24,8 @@ def parse_float(val):
         return float(val)
     except:
         return None
-    
+
+#Endpoint for ambiente 
 class AmbienteView(APIView):
     http_method_names = ['get', 'post', 'put', 'delete']
     permission_classes = [IsDirectorOrOnlyRead]
@@ -52,7 +55,7 @@ class AmbienteView(APIView):
             if not filterset.is_valid():
                 return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
             
-            # Obtém a queryset filtrada
+            # Obtem a queryset filtrada
             ambientes = filterset.qs
             serializer = AmbienteSerializer(ambientes, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -224,7 +227,7 @@ class SensoresView(APIView):
         
 # Save 'Contador' data 
 class ImportContador(APIView):
-    # permission_classes =[IsDirector]
+    permission_classes =[IsDirectorOrOnlyRead]
     def post(self, request):
         caminho_Arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'contador.xlsx')
 
@@ -243,7 +246,7 @@ class ImportContador(APIView):
                         'sensor': sensor,
                         'mac_address': mac,
                         'unidade_medida': unidade,
-                        'latitude': parse_float(lat),
+                        'latitude': parse_float(lat), # Transforma em float, pois o excel reconhece lat e log como string (texto)
                         'longitude': parse_float(lon),
                         'status': status_valor,
                     }
@@ -297,7 +300,7 @@ class ImportLuminosidade(APIView):
         
 # Save 'Temperatura'  
 class ImportTemperatura(APIView):
-    # permission_classes =[IsDirector]
+    permission_classes =[IsDirectorOrOnlyRead]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'temperatura.xlsx')
 
@@ -329,7 +332,7 @@ class ImportTemperatura(APIView):
             return Response({'erro': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)      
 # Save 'Umidade' 
 class ImportUmidade(APIView):
-    # permission_classes =[IsDirector]
+    permission_classes =[IsDirectorOrOnlyRead]
     def post(self, request):
         caminho_arquivo = os.path.join(settings.BASE_DIR, '..', 'Dados Integrador', 'umidade.xlsx')
 
@@ -421,6 +424,7 @@ class HistoricoView(APIView):
             historico = Historico.objects.get(pk=pk)
             serializer = HistoricoSerializer(historico, data=request.data, partial=True)
             if serializer.is_valid():
+                serializer.save()
                 return Response({'message':'Successfully updated ✅', 'data': serializer.data}, status=status.HTTP_201_CREATED)
             return Response({'message':'Error in Request ❌', 'Error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         except Http404:
@@ -636,8 +640,7 @@ class ExportSensores(APIView):
         response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
         response['Content-Disposition'] = 'attachment; filename="sensores.xlsx"'
         wb.save(response)
-
-        return response
+        return Response("File generated successfully")
 
 class ExportAmbientes(APIView):
         permission_classes = [IsDirectorOrOnlyRead]
@@ -657,14 +660,14 @@ class ExportAmbientes(APIView):
                     ambiente.sig,
                     ambiente.descricao, 
                     ambiente.ni,
-                    ambiente.responsavel
+                    str(ambiente.responsavel)
                 ]
                 ws_ambientes.append(export_data)
             response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             response['Content-Disposition'] = 'attachment; filename="ambiente.xlsx"'
             wb.save(response)
 
-            return response
+            return Response("File generated successfully")
 class ExportHistorico(APIView):
     permission_classes = [IsDirectorOrOnlyRead]
     def get(self, request):
@@ -689,5 +692,5 @@ class ExportHistorico(APIView):
         response['Content-Disposition'] = 'attachment; filename="historico.xlsx"'
         wb.save(response)
 
-        return response
+        return Response("File generated successfully")
     

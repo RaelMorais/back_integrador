@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt', 
     'drf_yasg',
     'django_filters',
+    'graphene_django',
 
 ]
 
@@ -149,4 +150,7 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True, 
 }
 
+GRAPHENE = {
+    "SCHEMA": "app.schema.schema",  # ajuste conforme seu app
+}
 AUTH_USER_MODEL = 'app.Usuario'

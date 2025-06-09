@@ -3,6 +3,8 @@ from .views import *
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from graphene_django.views import GraphQLView
+from django.views.decorators.csrf import csrf_exempt
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -41,20 +43,21 @@ urlpatterns = [
     path("historico/", HistoricoView.as_view()),
     path("historico/<int:pk>", HistoricoView.as_view()),
     path("import/historico/", ImportHistorico.as_view()),
-    path("export/historico/", ExportHistorico.as_view(), name=""), 
+    path("export/historico/", ExportHistorico.as_view(),), 
 
     #Obtain Token 
-    path('token/', LoginView.as_view(), name='token_obtain_pair'),
+    path('login/', LoginView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 
-    path("user/", SaveUser.as_view()),
+    path("user/import/", SaveUser.as_view()),
     #Create User 
-    path('create/', CreateUserView.as_view()),
+    path('user/create/', CreateUserView.as_view()),
 
     #Swagger & Redoc
     path('redoc/', view=schema_view.with_ui('redoc', cache_timeout=0)), # --> Com redoc 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'), # --> Com Swaager
+    path("graphql/", csrf_exempt(GraphQLView.as_view(graphiql=True))),
 ]
 
 
