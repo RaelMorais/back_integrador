@@ -67,7 +67,7 @@ Swagger Docs: http://127.0.0.1:8000/api/swagger/
       
 GraphQL Playground: http://127.0.0.1:8000/api/graphql/
 
-  Full Postman Documentation: 📄 Click ![here]("https://documenter.getpostman.com/view/41755227/2sB2x3oYq8") to view
+  Full Postman Documentation: 📄 [Click here to view](https://documenter.getpostman.com/view/41755227/2sB2x3oYq8)
   
 
 
