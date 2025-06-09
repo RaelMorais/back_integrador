@@ -572,6 +572,7 @@ class UpdateDeleteDetailUsuario(RetrieveUpdateDestroyAPIView):
         try:
             usuario = self.get_object()
             serializer = self.get_serializer(usuario)
+            usuario.delete()
             return Response({'message': 'usuario apagado com sucesso'}, status=status.HTTP_204_NO_CONTENT)
         except Http404:
             raise Http404("Usuario não encontrando")

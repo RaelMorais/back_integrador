@@ -50,9 +50,10 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
 
-    path("user/import/", SaveUser.as_view()),
     #Create User 
     path('user/create/', CreateUserView.as_view()),
+    path("user/import/", SaveUser.as_view()),
+    path("user/<int:pk>", UpdateDeleteDetailUsuario.as_view()),
 
     #Swagger & Redoc
     path('redoc/', view=schema_view.with_ui('redoc', cache_timeout=0)), # --> Com redoc 
